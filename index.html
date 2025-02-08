@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to PDF Converter | Free Online Tool with Instant Download</title>
+    <meta name="description" content="Convert JPG, PNG to PDF online for free. Fast, secure, and fully animated PDF conversion tool with instant download. No registration required!">
+    <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, free pdf converter, online pdf tool, animated converter">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 1.5s ease-in;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .upload-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        #drop-zone {
+            border: 2px dashed white;
+            border-radius: 10px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #drop-zone:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .convert-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        .convert-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .preview img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            animation: slideUp 0.5s ease;
+            transition: transform 0.3s ease;
+        }
+
+        .preview img:hover {
+            transform: scale(1.1);
+        }
+
+        .loader {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Convert Images to PDF Instantly! 🚀</h1>
+        
+        <div class="upload-section">
+            <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <h2>Drag & Drop Images Here</h2>
+                <p>or click to select files</p>
+                <input type="file" id="file-input" accept="image/*" multiple>
+            </div>
+        </div>
+
+        <div class="preview" id="preview"></div>
+        <div class="loader" id="loader"></div>
+        <button class="convert-btn" onclick="convertToPdf()">Convert to PDF Now!</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+        let images = [];
+
+        // Handle file selection
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+
+        // Handle drag & drop
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.background = 'rgba(255, 255, 255, 0.2)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            handleFiles(e.dataTransfer.files);
+            dropZone.style.background = '';
+        });
+
+        // Process files
+        function handleFiles(files) {
+            images = [];
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        images.push(e.target.result);
+                        preview.innerHTML += `
+                            <img src="${e.target.result}" alt="Preview Image">
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Convert to PDF
+        async function convertToPdf() {
+            if (images.length === 0) {
+                alert('Please select images first!');
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            // Create PDF
+            const pdf = new jsPDF();
+            for (let i = 0; i < images.length; i++) {
+                if (i > 0) pdf.addPage();
+                const img = new Image();
+                img.src = images[i];
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        const imgWidth = pdf.internal.pageSize.getWidth();
+                        const imgHeight = (img.height * imgWidth) / img.width;
+                        pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+                        resolve();
+                    };
+                });
+            }
+
+            loader.style.display = 'none';
+            pdf.save('converted.pdf');
+        }
+    </script>
+</body>
+</html>
